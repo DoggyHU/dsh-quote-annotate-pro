@@ -1,5 +1,9 @@
 # dsh-quote-annotate-pro
 
+[![npm version](https://img.shields.io/npm/v/dsh-quote-annotate-pro?color=2ea44f&label=npm)](https://www.npmjs.com/package/dsh-quote-annotate-pro)
+[![ci](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 **在 DSH 会话里划词 → 批注 → 引用**：选中的文字变成带锚点的引用进入输入框，发送时序列化为结构化引用块；输入框下方常驻一条**引用导航条**，点一下就能跳回原文并高亮。多轮对话里，模型看到的是 `【引用 · 第N轮 · 你的消息】`，不再需要猜"你说的是哪一处"。
 
 > 这是 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate)（MIT，作者 wangwei-wade）的增强 fork。
@@ -53,6 +57,12 @@
 ## 安装
 
 ```sh
+# 从 npm 安装（推荐，一步到位）
+dsh plugin --profile <profile> add dsh-quote-annotate-pro
+
+# 或直接从 GitHub 安装
+dsh plugin --profile <profile> add github:zhao-guang-ai/dsh-quote-annotate-pro
+
 # 本地开发：
 #   <本仓库绝对路径> 为克隆后的目录；link 安装后改文件即刻热更，无需重启
 dsh plugin --profile <profile> add <本仓库绝对路径>

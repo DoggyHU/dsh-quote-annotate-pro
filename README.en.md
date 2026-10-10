@@ -1,5 +1,9 @@
 # dsh-quote-annotate-pro
 
+[![npm version](https://img.shields.io/npm/v/dsh-quote-annotate-pro?color=2ea44f&label=npm)](https://www.npmjs.com/package/dsh-quote-annotate-pro)
+[![ci](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 **Select → annotate → quote, inside a DSH conversation.** The selected text enters the composer as an anchored quote reference; on send it serializes into a structured quote block, and a quote bar under the composer jumps back to the exact source message and highlights it. The model sees `【引用 · 第N轮 · DSH 回复】` — which turn, whose message — so it no longer has to guess what "that part above" means.
 
 > An enhanced fork of [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) (MIT, by wangwei-wade).
@@ -21,6 +25,9 @@
 ## Install
 
 ```sh
+# from npm (recommended)
+dsh plugin --profile <profile> add dsh-quote-annotate-pro
+
 # from GitHub
 dsh plugin --profile <profile> add github:zhao-guang-ai/dsh-quote-annotate-pro
 
