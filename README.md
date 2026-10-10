@@ -143,4 +143,7 @@ turnTail:render                                     回合尾部按钮取文
 
 ## 许可与来源
 
-MIT。上游 `dsh-quote-annotate` © 2026 wangwei-wade；本 fork 的修改同样以 MIT 发布，见 [LICENSE](./LICENSE)。
+MIT，见 [LICENSE](./LICENSE)。
+
+- 上游：[`wangwei-wade/dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) v0.1.1（MIT，© 2026 wangwei-wade）
+- 本 fork：修复其在 **DSH 0.2.0-rc.2** 上的 6 个兼容性问题，并补充引用定位相关能力，同样以 MIT 发布
