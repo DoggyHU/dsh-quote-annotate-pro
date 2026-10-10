@@ -137,6 +137,34 @@ turnTail:render                                     回合尾部按钮取文
 
 不需要时把 `DIAG_ENABLED` 改成 `false` 即可（`console.log('[quote-pro]', …)` 会保留）。
 
+## 发版（维护者）
+
+发布走 **npm Trusted Publishing（OIDC）**，仓库里不保存任何 token，也不需要动态验证码：
+
+1. 改 `package.json` 的 `version`，并在 `CHANGELOG.md` 记录变更
+2. 提交、打标签、推送：
+
+   ```sh
+   git tag -a v0.2.2 -m "v0.2.2"
+   git push origin main --follow-tags
+   ```
+
+3. GitHub Actions 的 [`release.yml`](.github/workflows/release.yml) 自动执行：
+   校验 tag 与版本一致 → 语法与清单自检 → `npm publish --provenance`（带 SLSA 签名）
+4. 该版本已存在时自动跳过，工作流可安全重跑
+
+已在 npm 包设置页配置的 Trusted Publisher：
+
+| 字段 | 值 |
+|---|---|
+| Organization or user | `zhao-guang-ai` |
+| Repository | `dsh-quote-annotate-pro` |
+| Workflow filename | `release.yml` |
+| Environment name | `npm` |
+
+> 注：npm 现在对"绕过 2FA 的 token 直接发布"逐步收紧（账号变更已限制，直接发布 2027-01 起限制），
+> 因此本仓库从一开始就只走 OIDC —— 这是官方推荐方向，也避免了 token 泄漏风险。
+
 ## 已知限制
 
 - **输入框 chip 本体跳转依赖 `title`**：本版本 chip 无 `data-*` 属性，是按渲染出的 `title`（= 插入时写入的 label）反查 ref；

@@ -80,6 +80,22 @@ npm run diag     # local diagnostics sink (http://127.0.0.1:47821)
 
 `lib/client.js` is a hand-written bundle (no build step) — edit and save; the client HMR reloads it. See [README.md](./README.md) (Chinese) for the diagnostics channel and known limitations.
 
+## Releasing (maintainers)
+
+Releases go through **npm Trusted Publishing (OIDC)** — no token is stored in the repository and no one-time code is needed:
+
+1. Bump `version` in `package.json` and note the change in `CHANGELOG.md`
+2. Commit, tag and push:
+
+   ```sh
+   git tag -a v0.2.2 -m "v0.2.2"
+   git push origin main --follow-tags
+   ```
+
+3. [`release.yml`](.github/workflows/release.yml) then checks the tag against the version, runs the syntax/manifest checks, and publishes with `--provenance` (SLSA attestation). An already-published version is skipped, so the workflow is safe to re-run.
+
+Trusted Publisher configured on npm: `zhao-guang-ai` / `dsh-quote-annotate-pro` / workflow `release.yml` / environment `npm`.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE). Upstream: [`wangwei-wade/dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) (MIT, © 2026 wangwei-wade).
