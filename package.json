@@ -1,0 +1,46 @@
+{
+  "name": "dsh-quote-annotate-pro",
+  "version": "0.2.0",
+  "description": "选区引用与锚点批注（增强 fork）：划词 → 批注 → 带精确锚点的引用 chip，点击跳回原文；提交时把轮次/角色/位置写入引用块，让模型精确知道你指的是哪一处。",
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "quote", "annotate", "selection", "reference", "anchor"],
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": ["lib", "tools", "cordis.patch.yml", "README.md", "SUMMARY.md", "CHANGELOG.md", "LICENSE"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhao-guang-ai/dsh-quote-annotate-pro.git"
+  },
+  "homepage": "https://github.com/zhao-guang-ai/dsh-quote-annotate-pro#readme",
+  "bugs": {
+    "url": "https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/issues"
+  },
+  "scripts": {
+    "check": "node tools/check-manifest.mjs",
+    "diag": "node tools/diag-sink.mjs"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  }
+}
