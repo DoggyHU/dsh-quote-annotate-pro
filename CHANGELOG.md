@@ -2,6 +2,12 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 0.2.1 — 文档与自动发版
+
+- README / README.en：新增 npm 版本、CI、License 徽章；安装章节补上 `dsh plugin add dsh-quote-annotate-pro`（npm）与 `github:` 两种方式
+- 新增 `.github/workflows/release.yml`：推 `v*` 标签即由 **npm Trusted Publishing（OIDC）** 自动发布，仓库不存任何 token，并生成 provenance 签名
+- `lib/client.js` 相对 0.2.0 **无变化**（本次发版只为验证 OIDC 发布链路并把文档同步到 npm）
+
 ## 0.2.0 — 首个公开发布
 
 Fork 自 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) v0.1.1（MIT），
