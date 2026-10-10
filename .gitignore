@@ -17,3 +17,6 @@ Thumbs.db
 # 临时文件
 *.tmp
 tmp/
+
+# 本地研究/上架跟踪（只记本地，不入库）
+.research/

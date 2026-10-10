@@ -26,6 +26,13 @@
     "check": "node tools/check-manifest.mjs",
     "diag": "node tools/diag-sink.mjs"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "peerDependencies": {
     "react": "^18.2.0"
   },
