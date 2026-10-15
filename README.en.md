@@ -18,6 +18,7 @@
 | Select & annotate | Select text in the transcript → a bubble appears above the selection → write a comment (optional) → `Enter` |
 | Quote chip | An atomic `引用1` chip (short label) lands in the composer; it expands to the full quote block on send |
 | **Quote block** | While a quote is in the composer, a compact block above it shows the **quoted text snippet** (single line, ellipsised). Click it to jump back to the source and highlight it — no visible "jump" affordance, so the composer stays clean |
+| **Compact quotes in the transcript** | A sent message shows only a **compact quote block** (up to 3 lines) — the `【引用 · 第N轮 · 角色】` label is hidden. Clicking the block jumps back to the source and highlights it, while the message payload still carries the turn/role, so the model keeps the position context |
 | **Turn-accurate context** | The quote block starts with `【引用 · 第3轮 · 你的消息】` followed by `> quoted text`, so the model knows exactly which turn and whose message |
 | Turn-level quoting | Every finished turn gets `引用提问` / `引用回答` buttons that quote the whole question or answer |
 | Anchors survive reload | The `ref → anchor` map is persisted in `localStorage` (per session, 60 entries max), so quotes still jump after a page refresh |
