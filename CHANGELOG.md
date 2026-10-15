@@ -2,6 +2,15 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 0.2.5 — 引用块样式：贴在输入框上沿
+
+- 0.2.4 曾把引用块挪进 `conversation.input.overlay`，实测该槽位是**浮动弹层**（放的是 slash-menu / command-popup 这类弹窗），静态内容放进去不可见 → **改回 `conversation.input.dock`**
+- DSH 没有"输入框卡片内部、文字上方"的静态槽位：
+  - `conversation.input.overlay` = 浮动弹层（不适用）
+  - `conversation.input.attachments` = 官方草稿附件栏（single 槽位，占用会顶掉官方附件 UI，不能碰）
+- 折中方案：引用块留在卡片上沿，用样式做成**贴着输入框**（顶部大圆角、底部小圆角、无间隙），视觉上与输入框连成一体
+- 对话页里的紧凑引用（0.2.3）不受影响
+
 ## 0.2.4 — 输入框里的引用块（挪进输入框卡片内）
 
 - 引用块从「输入框卡片**上方**」挪到「输入框卡片**内部**、文字上方」（`conversation.input.overlay` 槽位），与参考产品一致：引用跟着输入内容走，看起来是一体的
