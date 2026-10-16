@@ -1,7 +1,7 @@
 {
   "name": "dsh-quote-annotate-pro",
-  "version": "0.2.10",
-  "description": "选区引用与锚点批注（增强 fork）：划词 → 批注 → 带精确锚点的引用；输入框上方只显示原文片段，点一下跳回原文；发送时把轮次/角色写入引用块，让模型精确知道你指的是哪一处。",
+  "version": "0.2.11",
+  "description": "划词批注与引用锚点：划词 → 批注 → 引用；输入框与消息里只显示紧凑的原文引用块（轮次/角色行隐藏），点一下跳回原文并高亮；发给模型的引用块仍标明轮次与角色，多轮对话不再猜。纯客户端，不访问外部服务。",
   "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "quote", "annotate", "selection", "reference", "anchor"],
   "license": "MIT",
   "type": "module",
