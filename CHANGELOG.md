@@ -2,6 +2,15 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 0.2.10 — 文档更正：如实披露 localhost 诊断探测
+
+- PR #697（`0xsline/awesome-deepseek-harness`）**已合并**，但维护者把我们的收录文案从 "no network access" 改写成
+  *"the client enables localhost diagnostic requests by default"* —— 因为插件默认确实会向 `127.0.0.1:47821` 发一次探测
+- README / README.en 新增「隐私 / 网络」小节：如实说明"纯客户端、不访问外部服务、不碰凭证"，
+  但**默认会向本机 47821 发一次探测**；想让"零请求"成真就设 `DIAG_ENABLED = false`
+- 发布工具包 `PR-TEXTS.md` 同步改写（EN/ZH 两处模板 + 复查清单加了一条 ⚠️ 提醒），避免后续插件再写错
+- 仅文档变更，代码行为不变
+
 ## 0.2.9 — 编辑框定位再修：排除"贴文档原点"的退化矩形
 
 - 0.2.8 只拦了"尺寸为 0"的矩形；实测选区被打断后 `getBoundingClientRect()` 会返回**贴文档原点、但高度非 0** 的退化矩形，仍会算出 `left≈12 / top≈8`（窗口左上角）

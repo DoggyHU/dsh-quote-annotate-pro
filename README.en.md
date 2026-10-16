@@ -81,6 +81,12 @@ npm run diag     # local diagnostics sink (http://127.0.0.1:47821)
 
 `lib/client.js` is a hand-written bundle (no build step) — edit and save; the client HMR reloads it. See [README.md](./README.md) (Chinese) for the diagnostics channel and known limitations.
 
+### Privacy / network (state this accurately in directory entries)
+
+This is a client-side plugin: **no external services, no credentials**. Its only data store is the anchor map in `localStorage` (≤60 entries per session).
+
+⚠️ It **does** send one probe to `http://127.0.0.1:47821` on load by default (`DIAG_ENABLED = true`) plus diagnostics once a local sink answers — so **do not describe it as "no network access"**. On 2026-10-16 the `0xsline/awesome-deepseek-harness` maintainer corrected exactly that claim while merging our entry to *"the client enables localhost diagnostic requests by default"*. Set `DIAG_ENABLED = false` if you want zero requests to be literally true.
+
 ## Releasing (maintainers)
 
 Releases go through **npm Trusted Publishing (OIDC)** — no token is stored in the repository and no one-time code is needed:

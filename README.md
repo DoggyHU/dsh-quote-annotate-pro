@@ -129,6 +129,14 @@ const DIAG_URL = 'http://127.0.0.1:47821/dsh-quote-pro'
 插件启动时 POST 一次 `/ping`；**探测不到接收端就本次运行静默**（不会产生网络噪音）。
 配合 `npm run diag`，终端会实时打出全链路事件：
 
+> ⚠️ **隐私 / 网络说明（收录信息里必须如实写）**：本插件是纯客户端插件，**不访问任何外部服务、不碰凭证**，
+> 唯一的数据落点是 `localStorage` 里的锚点表（每会话 ≤60 条）。
+> 但它默认会向**本机** `http://127.0.0.1:47821` 发一次探测（以及探测成功后的诊断事件）——
+> 这是 `DIAG_ENABLED = true` 的默认行为，**不要写成"零网络请求"**。
+> 2026-10-16 我们就因为这句不准确的表述，被 `0xsline/awesome-deepseek-harness` 的维护者在合并时改写成
+> *"the client enables localhost diagnostic requests by default"*。想让"无网络请求"成为事实，就把 `DIAG_ENABLED` 改成 `false`。
+
+
 ```
 module:materialized / apply:start / register:ok …   插件加载与槽位注册
 selection:show / selection:stage                    划词与「批注」
