@@ -2,6 +2,17 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 0.3.1 — 引用管线懒重试：页面刷新后不再退化成纯文本
+
+- **根因**：页面刷新时插件 `apply` 早于宿主 `inputTriggers` 服务就绪，`ctx.get('inputTriggers')` 拿到空值后
+  `pipelineAvailable` 被永久置为 `false` → 之后每次批注插入都走「纯文本回退」，输入框里出现 `【批注 1 …】` 裸文本块
+  （实测证据：localStorage 草稿记录为 `{"draft":{"text":"【批注 1 · …】\n钟）\n\n批注：1…","references":[]}}`，即没有 chip）
+- **修复**：引用源注册改为幂等懒加载 `ensureQuoteSource()`，服务未就绪时按 500ms × 20 次（≈10s）自动重试，
+  每次插入前也会先试一次；重试成功即恢复正常 chip 插入，无需用户刷新页面或重启
+- **可观测性**：`insert:draft` 诊断补充 `draftLen` / `pipeline`；`insert:fallback-plaintext` 补充 `draftLen` / `bodyLen` / `pipeline`；
+  编辑器提示按状态区分（`null` = 正在初始化引用管线，`false` = 回退为纯文本）
+- 自检照旧：`npm test`（8 组纯函数断言）、`node --check`、`check-manifest` 全绿
+
 ## 0.3.0 — 编号批注 + 回复逐条对照
 
 - **批注自动编号**：同一条消息里每次插入批注都会编号（`批注 1`、`批注 2`…，删掉中间某条不会重号，见 `nextAnnotationNo()`）；
