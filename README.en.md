@@ -6,7 +6,7 @@
 
 **Select → annotate → quote. After you send, the quote is still visible — and one click takes you back to the source.**
 
-Selected text becomes an anchored quote block: in the composer and in the sent message it renders as a **compact quoted snippet** (max 3 lines, the turn/role line hidden), and clicking it jumps back to the source message and highlights it. What the model receives still starts with `【引用 · 第N轮 · 角色】`, so it always knows which turn and whose message.
+Selected text becomes an anchored quote block: in the composer and in the sent message it renders as a **compact quoted snippet** (max 3 lines, the turn/role line hidden), and clicking it jumps back to the source message and highlights it. What the model receives still carries **which annotation it is, which turn and whose message** (`【批注 2 · 第5轮 · DSH 回复】`) plus an instruction to answer with `Annotation 1:`, `Annotation 2:` … — and **each `Annotation N:` in the reply becomes a `批注 N` chip: hover to see the quoted text and your comment, click to jump back to the source.**
 
 > Listed in the in-DSH market (`dshmarket`), [DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro), [dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro), dsh.pub, dsh-xray, HackSing/dsh-plugins, and [awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness).
 
@@ -35,10 +35,12 @@ In one sentence: **a quote is part of the conversation and should not be hidden.
 | Capability | Detail |
 | --- | --- |
 | Select & annotate | Select text in the transcript → a bubble appears above the selection → write a comment (optional) → `Enter` |
-| Quote chip | An atomic `引用1` chip (short label) lands in the composer; it expands to the full quote block on send |
+| **Automatic numbering** | Multiple annotations in one message are numbered (`批注 1`, `批注 2`, …; deleting one never reuses a number); the chip reads `批注1`, the model sees `【批注 N · 第5轮 · 角色】` |
+| Quote chip | An atomic `批注1` chip (short label) lands in the composer; it expands to the full quote block on send |
 | **Quote block (in the composer)** | After inserting a quote the composer shows only the **quoted text** (the turn/role line is hidden); click it to jump back to the source and highlight it — no visible "jump" affordance |
-| **Compact quotes in the transcript** | A sent message shows only a **compact quote block** (up to 3 lines). The message text still starts with `【引用 · 第N轮 · 角色】` — hidden in the UI, so the model keeps the position context |
-| **Turn-accurate context** | The quote block starts with `【引用 · 第3轮 · 你的消息】` followed by the quoted text, so the model knows exactly which turn and whose message |
+| **Compact quotes in the transcript** | A sent message shows only a **compact quote block** (up to 3 lines) followed by `批注：…`. The message text still starts with the position line — hidden in the UI, so the model keeps the position context |
+| **Per-annotation replies** | The protocol instruction is embedded in the first position line (hidden in the UI); `Annotation N:` in the model's reply renders as a `批注 N` chip — hover for the quoted text + comment, click to jump back to the source |
+| **Turn-accurate context** | The quote block starts with `【批注 2 · 第3轮 · 你的消息】` followed by the quoted text and your comment, so the model knows exactly which annotation, which turn and whose message |
 | Turn-level quoting | Every finished turn gets `引用提问` / `引用回答` buttons that quote the whole question or answer |
 | Anchors survive reload | The `ref → anchor` map is persisted in `localStorage` (per session, 60 entries max), so quotes still jump after a page refresh |
 

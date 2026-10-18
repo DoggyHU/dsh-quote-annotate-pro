@@ -20,6 +20,10 @@ jobs:
           node --check lib/index.js
           node --check tools/diag-sink.mjs
           node --check tools/check-manifest.mjs
+          node --check tools/test-client.mjs
 
       - name: 清单一致性自检
         run: node tools/check-manifest.mjs
+
+      - name: 客户端纯函数自检
+        run: node tools/test-client.mjs
