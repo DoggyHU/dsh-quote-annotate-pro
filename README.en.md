@@ -104,6 +104,7 @@ Official surfaces used: `slots` (`shell.overlay`, `conversation.chat.turnTail`, 
 
 ```sh
 npm run check    # manifest self-check (package.json / patch / bundle registration id)
+npm test         # pure-function self-check for the client bundle (numbering, block parsing, snippets — no browser/network)
 npm run diag     # local diagnostics sink (http://127.0.0.1:47821)
 ```
 
