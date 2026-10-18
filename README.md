@@ -4,12 +4,31 @@
 [![ci](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**在 DSH 会话里划词 → 批注 → 引用**：选中的文字变成带锚点的引用进入输入框，发送时序列化为结构化引用块；输入框下方常驻一条**引用导航条**，点一下就能跳回原文并高亮。多轮对话里，模型看到的是 `【引用 · 第N轮 · 你的消息】`，不再需要猜"你说的是哪一处"。
+**划词 → 批注 → 引用；发送之后，引用块仍然看得见，点一下就能回到原文。**
 
-> 这是 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate)（MIT，作者 wangwei-wade）的增强 fork。
-> 上游 v0.1.1 在 **DSH 0.2.0-rc.2** 上会**静默失效**（既不报错也不注册任何 UI），本 fork 修掉了 4 个兼容性问题，
-> 并补上了 3 项能力；另有 2 个接口变化（当前会话、chip DOM 定位）一并适配。许可仍为 MIT，见 [LICENSE](./LICENSE)。
-> 完整汇总见 [SUMMARY.md](./SUMMARY.md)。
+选中的文字变成带锚点的引用块：输入框里、已发送的消息里都只显示**紧凑的原文片段**（最多 3 行，轮次/角色那一行被隐藏），点它跳回原文并高亮；而发给模型的文本仍然以 `【引用 · 第N轮 · 角色】` 开头，模型始终知道这是哪一轮、谁说的。
+
+> 已收录：in-DSH 市场（`dshmarket`）、[DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro)、[dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro)、dsh.pub、dsh-xray、HackSing/dsh-plugins、[awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness)。
+
+## 设计取舍：引用块"看得见"，而不是收进 chip
+
+划词引用/批注这类插件，市场上的主流做法是**把引用收起来**：气泡里只剩一颗 `引用1` chip 或一个「批注 ×N」标签，原文要点开或悬停才能看到。本插件走的是另一条路：
+
+| | 收进 chip / 标签（常见做法） | **本插件：紧凑引用块** |
+|---|---|---|
+| 发送后的气泡 | 只剩 chip / 标签，看不到引的是哪段 | **直接显示原文片段**（最多 3 行，超长省略） |
+| 想对照原文 | 悬停或点开标签 | **点引用块 → 跳回原文并高亮** |
+| 输入框 | chip 短标签 | 同样显示原文片段，与消息里一致 |
+| 模型侧 | 取决于实现 | 文本仍带 `【引用 · 第N轮 · 角色】`，位置不丢 |
+| 代价 | 气泡更"干净" | 气泡会多一块灰底引用区（所以压到 3 行、隐藏位置行） |
+
+一句话：**引用是对话的一部分，不该被藏起来。** 如果你更希望气泡绝对干净、只在悬停时看引用，市面上有更合适的方案；如果你常要"这段是我引的哪一句"来回对照，这就是本插件存在的理由。
+
+## 三步上手
+
+1. 在任意消息里**选中一段文字** → 选区上方浮出小气泡 → 点「批注」→ 写评语（可留空）→ `Enter`；
+2. 输入框里出现引用；**输入框上沿**同时出现一条引用块，点它可跳回原文；
+3. 发送后气泡里仍是紧凑引用块，点它随时回到原文并高亮；每轮结束处还有「引用提问 / 引用回答」，可整段引用该轮。
 
 ## 功能
 
@@ -19,41 +38,15 @@
 | 引用 chip | 输入框里出现 `引用1` 的原子 chip（短标签）；发送时展开为完整引用块 |
 | **引用块（输入框内）** | 插入引用后输入框里只显示**原文片段**（位置行隐藏）；**点一下即跳回原文并高亮** —— 不做任何可见的"跳转"提示 |
 | **对话页里的紧凑引用** | 已发送消息里的引用同样只显示**紧凑原文块**（最多 3 行）。**消息文本仍以 `【引用 · 第N轮 · 角色】` 开头** —— 界面隐藏、模型照旧知道出处 |
-| **模型侧精确定位** | 引用块首行是 `【引用 · 第5轮 · 你的消息】`，后接 `> 原文`，让模型明确知道**哪一轮、谁说的** |
+| **模型侧精确定位** | 引用块首行是 `【引用 · 第5轮 · 你的消息】`，后接原文，让模型明确知道**哪一轮、谁说的** |
 | 回合级引用 | 每条已完成回合尾部有「引用提问 / 引用回答」，整段引用该轮 |
 | 锚点持久化 | `ref → 锚点` 映射写入 `localStorage`（按会话，最多 60 条），**刷新页面后引用块仍能跳回原文** |
 | 中英自适应 | 按钮文案跟随界面语言（沿用上游） |
 
-## 与上游的差异
-
-### 兼容性修复（否则整插件静默失效）
-
-1. **缺 cordis 依赖声明** —— 上游 `apply(ctx)` 里 `const slots = ctx.get('slots')`，拿不到就 `return`。
-   没有声明 `inject: ['slots']` 时 `apply` 可能早于 slots 服务就绪执行，于是**无声退出，一个 UI 都不注册**。
-   → 本 fork 声明 `exports.name` + `exports.inject = ['slots']`，并给每一步注册加 `try/catch` + 上报。
-
-2. **`conversation.chat.turnTail` 已从 chain 变 list**（DSH 0.1.6-alpha.2 起）—— 上游仍用 `{ select, priority }` 注册，
-   会抛错；而它排在 4 个 overlay 注册**之前**，一崩全崩。→ 改为 `{ name, id, order }`。
-
-3. **chip 插入 API 变了** —— 上游调用 `input.insertReference(...)`，该对象在本版本没有此方法，永远退化为纯文本。
-   → 改走官方会话事件 `slash/input-insert-reference`（与 `dsh-better-sidebar` 同一条在本版本已验证的通路）。
-
-4. **回合尾部按钮不出现（快照形状变了）** —— 上游用 `useSession` 的快照 + `Array.isArray(snapshot.nodes)` + 节点 `seq`
-   来取该轮文本；本版本真实形状是 **Chat 快照（`useChat`）**、**`nodes` 是 Map**、**节点身份是 `anchorSeq`**、
-   文本在 `user.data.content[{type:'text'}]` / `assistant-step.data.blocks[{kind:'text'}]`，
-   assistant 节点 kind 也不是 `assistant` 而是 `assistant-step`。→ 全部按本版本形状重写取文与锚点解析。
-
-### 能力增强
-
-5. **当前会话解析** —— 上游读 `useSessions(s => s.current)`，而**本版本会话列表快照没有 `current` 字段**（恒为 `undefined`），
-   导致点「批注」只关掉气泡、什么都不发生。→ 改为由**会话作用域槽位**（`conversation.input.dock` 探针）回填 `sessionId`，
-   并去掉"必须先解析到会话才开编辑框"的门槛（解析失败也照常进入编辑，插入时再解析）。
-
-6. **引用块带轮次/角色** —— 上游只发 `> 原文`。→ 首行加 `【引用 · 第N轮 · 角色】`（轮次取自 `data-chat-turn`，角色取自 `data-chat-flow-kind`）。
-
-7. **输入框上方的引用块 + 锚点持久化** —— 本版本输入框 chip **没有 `data-*` 属性**（只有 CSS 类），上游"点 chip 跳转"不可能成立。
-   → 改为读官方输入状态 `occurrences`（`source === 'quote-ref'`）渲染引用块，只显示**原文片段**（不显示标签/轮次，保持简洁）；
-   `ref → 锚点` 落 `localStorage`，刷新后仍可跳。（输入框 chip 本体也支持点击跳转：按 `title` = label 反查 ref，不依赖 CSS 类顺序。）
+> 这是 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate)（MIT，作者 wangwei-wade）的增强 fork。
+> 上游 v0.1.1 在 **DSH 0.2.0-rc.2** 上会**静默失效**（既不报错也不注册任何 UI），本 fork 修掉了 4 个兼容性问题，
+> 并补上了 3 项能力；另有 2 个接口变化（当前会话、chip DOM 定位）一并适配。许可仍为 MIT，见 [LICENSE](./LICENSE)。
+> 完整汇总见 [SUMMARY.md](./SUMMARY.md)。
 
 ## 安装
 
@@ -90,17 +83,49 @@ emit('slash/input-insert-reference', { reference, span })      ← 官方会话�
   ▼
 本插件 codec.serialize(ref) → 完整引用块
      【引用 · 第5轮 · DSH 回复】
-     > 原文……
+     原文……
      （你的评语）
   ▼
 模型收到"哪一轮 + 谁说的 + 原文"
 
-跳回原文：引用块/锚点 → [data-chat-anchor-key] 行 → scrollIntoView + 高亮（无可见提示）
+界面侧：插件在渲染时把位置行与引用正文包成紧凑块（隐藏位置行、只留原文），
+        点击引用块 → 按锚点 scrollIntoView + 高亮（无可见提示）。
 ```
 
 用到的官方接口：`slots`（`shell.overlay` / `conversation.chat.turnTail` / `conversation.input.dock`）、
 `conversation.input`（草稿 + occurrences）、`sessions.binding/scope`、`inputTriggers.registerSource` + codec、
 DOM 锚点 `data-chat-anchor-key` / `data-chat-turn`。
+
+## 与上游的差异
+
+### 兼容性修复（否则整插件静默失效）
+
+1. **缺 cordis 依赖声明** —— 上游 `apply(ctx)` 里 `const slots = ctx.get('slots')`，拿不到就 `return`。
+   没有声明 `inject: ['slots']` 时 `apply` 可能早于 slots 服务就绪执行，于是**无声退出，一个 UI 都不注册**。
+   → 本 fork 声明 `exports.name` + `exports.inject = ['slots']`，并给每一步注册加 `try/catch` + 上报。
+
+2. **`conversation.chat.turnTail` 已从 chain 变 list**（DSH 0.1.6-alpha.2 起）—— 上游仍用 `{ select, priority }` 注册，
+   会抛错；而它排在 4 个 overlay 注册**之前**，一崩全崩。→ 改为 `{ name, id, order }`。
+
+3. **chip 插入 API 变了** —— 上游调用 `input.insertReference(...)`，该对象在本版本没有此方法，永远退化为纯文本。
+   → 改走官方会话事件 `slash/input-insert-reference`（与 `dsh-better-sidebar` 同一条在本版本已验证的通路）。
+
+4. **回合尾部按钮不出现（快照形状变了）** —— 上游用 `useSession` 的快照 + `Array.isArray(snapshot.nodes)` + 节点 `seq`
+   来取该轮文本；本版本真实形状是 **Chat 快照（`useChat`）**、**`nodes` 是 Map**、**节点身份是 `anchorSeq`**、
+   文本在 `user.data.content[{type:'text'}]` / `assistant-step.data.blocks[{kind:'text'}]`，
+   assistant 节点 kind 也不是 `assistant` 而是 `assistant-step`。→ 全部按本版本形状重写取文与锚点解析。
+
+### 能力增强
+
+5. **当前会话解析** —— 上游读 `useSessions(s => s.current)`，而**本版本会话列表快照没有 `current` 字段**（恒为 `undefined`），
+   导致点「批注」只关掉气泡、什么都不发生。→ 改为由**会话作用域槽位**（`conversation.input.dock` 探针）回填 `sessionId`，
+   并去掉"必须先解析到会话才开编辑框"的门槛（解析失败也照常进入编辑，插入时再解析）。
+
+6. **引用块带轮次/角色** —— 上游只发原文。→ 首行加 `【引用 · 第N轮 · 角色】`（轮次取自 `data-chat-turn`，角色取自 `data-chat-flow-kind`）。
+
+7. **输入框上方的引用块 + 锚点持久化** —— 本版本输入框 chip **没有 `data-*` 属性**（只有 CSS 类），上游"点 chip 跳转"不可能成立。
+   → 改为读官方输入状态 `occurrences`（`source === 'quote-ref'`）渲染引用块，只显示**原文片段**（不显示标签/轮次，保持简洁）；
+   `ref → 锚点` 落 `localStorage`，刷新后仍可跳。（输入框 chip 本体也支持点击跳转：按 `title` = label 反查 ref，不依赖 CSS 类顺序。）
 
 ## 开发
 

@@ -4,12 +4,31 @@
 [![ci](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**Select → annotate → quote, inside a DSH conversation.** The selected text enters the composer as an anchored quote reference; on send it serializes into a structured quote block, and a quote bar under the composer jumps back to the exact source message and highlights it. The model sees `【引用 · 第N轮 · DSH 回复】` — which turn, whose message — so it no longer has to guess what "that part above" means.
+**Select → annotate → quote. After you send, the quote is still visible — and one click takes you back to the source.**
 
-> An enhanced fork of [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) (MIT, by wangwei-wade).
-> Upstream v0.1.1 **fails silently** on **DSH 0.2.0-rc.2** (loads without error, registers no UI at all). This fork fixes 4 compatibility
-> problems, adapts 2 further interface changes, and adds 3 capabilities. Still MIT — see [LICENSE](./LICENSE).
-> Full write-up: [SUMMARY.md](./SUMMARY.md) (Chinese).
+Selected text becomes an anchored quote block: in the composer and in the sent message it renders as a **compact quoted snippet** (max 3 lines, the turn/role line hidden), and clicking it jumps back to the source message and highlights it. What the model receives still starts with `【引用 · 第N轮 · 角色】`, so it always knows which turn and whose message.
+
+> Listed in the in-DSH market (`dshmarket`), [DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro), [dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro), dsh.pub, dsh-xray, HackSing/dsh-plugins, and [awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness).
+
+## The design choice: keep the quote *visible* instead of folding it into a chip
+
+Most selection-quote/annotation plugins **hide the quote**: the bubble keeps only a `引用1` chip or a "批注 ×N" tag, and you open or hover it to see the text. This plugin takes the other road:
+
+| | Fold into a chip / tag (common) | **This plugin: compact quote block** |
+|---|---|---|
+| Sent bubble | Just a chip/tag — you can't see what was quoted | **Shows the quoted snippet** (max 3 lines, truncated) |
+| Comparing with the source | Hover or expand the tag | **Click the block → jump back + highlight** |
+| Composer | Short chip label | Same quoted snippet as in the message |
+| Model side | Implementation-dependent | Text still starts with `【引用 · 第N轮 · 角色】` — position preserved |
+| Cost | Cleaner bubbles | One grey quote area (hence 3 lines + hidden turn/role line) |
+
+In one sentence: **a quote is part of the conversation and should not be hidden.** If you prefer absolutely clean bubbles with quotes only on hover, other plugins do that better; if you keep asking "which sentence did I quote here?", that is why this plugin exists.
+
+## Quick start
+
+1. **Select text** in any message → a bubble appears above the selection → click 「批注」 → write a comment (optional) → `Enter`.
+2. A quote lands in the composer; a **quote strip above the composer** shows the same snippet and jumps back to the source on click.
+3. After sending, the bubble keeps the compact quote block — click it any time to return to the source and highlight it. Each finished turn also gets 「引用提问 / 引用回答」 to quote the whole turn.
 
 ## Features
 
@@ -19,9 +38,14 @@
 | Quote chip | An atomic `引用1` chip (short label) lands in the composer; it expands to the full quote block on send |
 | **Quote block (in the composer)** | After inserting a quote the composer shows only the **quoted text** (the turn/role line is hidden); click it to jump back to the source and highlight it — no visible "jump" affordance |
 | **Compact quotes in the transcript** | A sent message shows only a **compact quote block** (up to 3 lines). The message text still starts with `【引用 · 第N轮 · 角色】` — hidden in the UI, so the model keeps the position context |
-| **Turn-accurate context** | The quote block starts with `【引用 · 第3轮 · 你的消息】` followed by `> quoted text`, so the model knows exactly which turn and whose message |
+| **Turn-accurate context** | The quote block starts with `【引用 · 第3轮 · 你的消息】` followed by the quoted text, so the model knows exactly which turn and whose message |
 | Turn-level quoting | Every finished turn gets `引用提问` / `引用回答` buttons that quote the whole question or answer |
 | Anchors survive reload | The `ref → anchor` map is persisted in `localStorage` (per session, 60 entries max), so quotes still jump after a page refresh |
+
+> An enhanced fork of [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) (MIT, by wangwei-wade).
+> Upstream v0.1.1 **fails silently** on **DSH 0.2.0-rc.2** (loads without error, registers no UI at all). This fork fixes 4 compatibility
+> problems, adapts 2 further interface changes, and adds 3 capabilities. Still MIT — see [LICENSE](./LICENSE).
+> Full write-up: [SUMMARY.md](./SUMMARY.md) (Chinese).
 
 ## Install
 
@@ -51,10 +75,12 @@ composer chip (an official Lexical decorator node)
   │ on send, this plugin's codec serializes the ref
   ▼
 【引用 · 第N轮 · 角色】
-> quoted text
+quoted text
 (comment)
 
-jump back: quote bar / chip → [data-chat-anchor-key] row → scrollIntoView + highlight
+On the UI side the plugin wraps the turn/role line and the quoted text at render time:
+the line is hidden, the text becomes a compact block, and clicking the block scrolls
+back to the anchor and highlights it (no visible affordance).
 ```
 
 Official surfaces used: `slots` (`shell.overlay`, `conversation.chat.turnTail`, `conversation.input.dock`),
