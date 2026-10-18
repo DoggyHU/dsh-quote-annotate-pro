@@ -27,7 +27,7 @@ In one sentence: **a quote is part of the conversation and should not be hidden.
 ## Quick start
 
 1. **Select text** in any message → a bubble appears above the selection → click 「批注」 → write a comment (optional) → `Enter`.
-2. A quote lands in the composer; a **quote strip above the composer** shows the same snippet and jumps back to the source on click.
+2. A **compact quote block** lands in the composer (quoted snippet + `批注：comment`, position line hidden); click it to jump back to the source.
 3. After sending, the bubble keeps the compact quote block — click it any time to return to the source and highlight it. Each finished turn also gets 「引用提问 / 引用回答」 to quote the whole turn.
 
 ## Features
@@ -35,9 +35,8 @@ In one sentence: **a quote is part of the conversation and should not be hidden.
 | Capability | Detail |
 | --- | --- |
 | Select & annotate | Select text in the transcript → a bubble appears above the selection → write a comment (optional) → `Enter` |
-| **Automatic numbering** | Multiple annotations in one message are numbered (`批注 1`, `批注 2`, …; deleting one never reuses a number); the chip reads `批注1`, the model sees `【批注 N · 第5轮 · 角色】` |
-| Quote chip | An atomic `批注1` chip (short label) lands in the composer; it expands to the full quote block on send |
-| **Quote block (in the composer)** | After inserting a quote the composer shows only the **quoted text** (the turn/role line is hidden); click it to jump back to the source and highlight it — no visible "jump" affordance |
+| **Automatic numbering** | Multiple annotations in one message are numbered (`批注 1`, `批注 2`, …; deleting one never reuses a number); the composer shows `批注：N`, the model sees `【批注 N · 第5轮 · 角色】` |
+| **Quote block (in the composer)** | Inserting writes plain text that the plugin folds into a compact quote block identical to the sent one; click it to jump back to the source — no chip involved |
 | **Compact quotes in the transcript** | A sent message shows only a **compact quote block** (up to 3 lines) followed by `批注：…`. The message text still starts with the position line — hidden in the UI, so the model keeps the position context |
 | **Per-annotation replies** | The protocol instruction is embedded in the first position line (hidden in the UI); `Annotation N:` in the model's reply renders as a `批注 N` chip — hover for the quoted text + comment, click to jump back to the source |
 | **Turn-accurate context** | The quote block starts with `【批注 2 · 第3轮 · 你的消息】` followed by the quoted text and your comment, so the model knows exactly which annotation, which turn and whose message |
@@ -70,24 +69,26 @@ Verified on **DSH 0.2.0-rc.2**, desktop profile (Windows). A page reload (or an 
 select text
   │ bubble 「批注」→ editor → Enter
   ▼
-emit('slash/input-insert-reference', { reference, span })      ← official session-scoped event
-  │ the input machine mints one occurrence (source='quote-ref' / ref / label)
+input.setDraft(...)  writes plain text: 【批注 N · 第N轮 · 角色】 + quote + 「批注：comment」
+  │ the composer decorator folds it into a compact quote block right away
   ▼
-composer chip (an official Lexical decorator node)
-  │ on send, this plugin's codec serializes the ref
+composer shows: compact quote block + 批注：comment (click the block to jump back)
+  │ send (message text = composer text, position line included)
   ▼
-【引用 · 第N轮 · 角色】
-quoted text
-(comment)
+model sees: which annotation, which turn, whose message, quote, comment
+  │ reply contains Annotation 1: … → rendered as a 批注 1 chip
+  ▼
+hover the chip for quote + comment, click to jump back to the source
 
 On the UI side the plugin wraps the turn/role line and the quoted text at render time:
 the line is hidden, the text becomes a compact block, and clicking the block scrolls
-back to the anchor and highlights it (no visible affordance).
+back to the anchor and highlights it (no visible affordance). The composer and the
+sent messages share exactly the same visual rules.
 ```
 
-Official surfaces used: `slots` (`shell.overlay`, `conversation.chat.turnTail`, `conversation.input.dock`),
-`conversation.input` (draft + occurrences), `sessions.binding` / `sessions.scope`,
-`inputTriggers.registerSource` + codec, and the DOM anchors `data-chat-anchor-key` / `data-chat-turn` / `data-chat-flow-kind`.
+Official surfaces used: `slots` (`shell.overlay`, `conversation.chat.turnTail`),
+`conversation.input` (draft), `sessions.binding` / `sessions.scope`, and the DOM anchors
+`data-chat-anchor-key` / `data-chat-turn` / `data-chat-flow-kind`.
 
 ## Differences from upstream
 
@@ -98,7 +99,7 @@ Official surfaces used: `slots` (`shell.overlay`, `conversation.chat.turnTail`, 
 3. `input.insertReference(...)` no longer exists — quoting fell back to plain text; now uses the `slash/input-insert-reference` session event.
 4. `useSessions(s => s.current)` is always `undefined` in this version (the session-list snapshot has no `current` field) — clicking 「批注」 only closed the bubble. Now the session id comes from a session-scoped slot probe.
 
-**Interface adaptations:** the turn-tail buttons read text from the **Chat snapshot** (`useChat`, `nodes` is a `Map`, identity is `anchorSeq`, assistant kind is `assistant-step`); composer chips have **no `data-*` attributes** any more, so the quote bar reads the official occurrence list instead.
+**Interface adaptations:** the turn-tail buttons read text from the **Chat snapshot** (`useChat`, `nodes` is a `Map`, identity is `anchorSeq`, assistant kind is `assistant-step`); the composer quote block is plain text decorated by the plugin (no chip / occurrence dependency), which keeps the composer and the sent bubble visually identical.
 
 ## Development
 
