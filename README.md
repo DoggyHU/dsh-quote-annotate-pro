@@ -8,6 +8,8 @@
 
 选中的文字变成带锚点的引用块：输入框里、已发送的消息里都只显示**紧凑的原文片段**（最多 3 行，轮次/角色那一行被隐藏），点它跳回原文并高亮；而发给模型的文本仍标明**这是第几处批注 + 哪一轮 + 谁说的**（`【批注 2 · 第5轮 · DSH 回复】`），并要求模型按 `Annotation 1：`、`Annotation 2：` 逐条回应 —— **回复里的每个 `Annotation N：` 都会渲染成 `批注 N` 芯片，悬浮看原文与评语，点击跳回原文。**
 
+> ⭐ **如果这个插件帮到了你，点个 Star 是最直接的支持** → [zhao-guang-ai/dsh-quote-annotate-pro](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro)（也会让更多 DSH 用户找到它）
+>
 > 已收录：in-DSH 市场（`dshmarket`）、[DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro)、[dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro)、dsh.pub、dsh-xray、HackSing/dsh-plugins、[awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness)。
 
 ## 设计取舍：引用块"看得见"，而不是收进 chip

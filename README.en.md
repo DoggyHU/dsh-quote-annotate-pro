@@ -8,6 +8,8 @@
 
 Selected text becomes an anchored quote block: in the composer and in the sent message it renders as a **compact quoted snippet** (max 3 lines, the turn/role line hidden), and clicking it jumps back to the source message and highlights it. What the model receives still carries **which annotation it is, which turn and whose message** (`【批注 2 · 第5轮 · DSH 回复】`) plus an instruction to answer with `Annotation 1:`, `Annotation 2:` … — and **each `Annotation N:` in the reply becomes a `批注 N` chip: hover to see the quoted text and your comment, click to jump back to the source.**
 
+> ⭐ **If this plugin helped you, a Star is the most direct way to support it** → [zhao-guang-ai/dsh-quote-annotate-pro](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro) (it also helps other DSH users find it).
+>
 > Listed in the in-DSH market (`dshmarket`), [DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro), [dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro), dsh.pub, dsh-xray, HackSing/dsh-plugins, and [awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness).
 
 ## The design choice: keep the quote *visible* instead of folding it into a chip
