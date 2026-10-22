@@ -10,6 +10,8 @@
 
 > ⭐ **如果这个插件帮到了你，点个 Star 是最直接的支持** → [zhao-guang-ai/dsh-quote-annotate-pro](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro)（也会让更多 DSH 用户找到它）
 >
+> 本仓库是 [`zhao-guang-ai/dsh-quote-annotate-pro`](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro) 的 fork（MIT；再上游是 [wangwei-wade/dsh-quote-annotate](https://github.com/wangwei-wade/dsh-quote-annotate)）。本 fork 在 0.3.5 基础上增加了文档预览批注能力，改动见 [CHANGELOG](./CHANGELOG.md) 的 0.3.6–0.3.10。
+
 > 已收录：in-DSH 市场（`dshmarket`）、[DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro)、[dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro)、dsh.pub、dsh-xray、HackSing/dsh-plugins、[awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness)。
 
 ## 设计取舍：引用块"看得见"，而不是收进 chip
@@ -48,6 +50,32 @@
 | 回合级引用 | 每条已完成回合尾部有「引用提问 / 引用回答」，整段引用该轮 |
 | 锚点持久化 | `ref → 锚点` 映射写入 `localStorage`（按会话，最多 60 条），**刷新页面后引用块仍能跳回原文** |
 | 中英自适应 | 按钮文案跟随界面语言（沿用上游） |
+
+### 文档预览划词：位置行带文件路径（0.3.6，本地 fork）
+
+在右侧栏的文档预览（docx / pdf / xlsx / 图片 / Markdown / 代码）里划词批注时，引用块位置行会带来源文件：
+
+- 聊天消息：`【批注 2 · 第5轮 · DSH 回复】`（与旧版完全一致）
+- 文档预览：`【批注 1 · 文件 · sidebar-test\测试文档.docx】`；文本类追加 `:L12`，PDF/Office 追加 `:p3`
+
+路径默认显示为「工作区内相对会话 cwd、工作区外绝对路径」；想一律用绝对路径，把 `lib/client.js` 顶部的
+`DOC_PATH_STYLE` 改成 `'absolute'`。取不到路径（旧版本没有预览槽位、侧栏被第三方接管等）时自动退回
+`【批注 1】`，不报错、不影响聊天批注与回跳。
+
+### 文件批注列表：先攒批注，再一次性发送（0.3.10）
+
+只对**不可编辑的文档预览**生效（docx / pdf / xlsx / 官方 md 预览 / 文本与代码预览）。可编辑预览（milkdown、
+sidebar-editor）和聊天输入框里的选区仍然不会弹气泡——保持原设定。
+
+1. 在文档预览里划词 → 浮出「批注」→ 写意见 → **加入批注列表**（不再立即写输入框）；
+2. 文件有批注后，预览**底部**浮出一条半透明胶囊：`批注 · N` + **展开 / 收起** + **全部发送** + **全部删除**；
+   - 展开后在上方浮出列表：单条点击原文可**展开 / 收起**；每条可**编辑**（行内输入框，Enter 保存 / Esc 取消）或**删除**；
+   - **点浮条/列表以外任意位置、或按 Esc 自动收起**（行内编辑时 Esc 只取消该条编辑）；
+   - 「**全部发送**」把 N 条按 `【批注 N · 文件 · <路径>[:p页|:L行]】` 一次性写进对话输入框，按回车即可发送；
+   - 「**全部删除**」清空本文件批注，浮条随之消失；
+3. 列表按「会话 + 文件绝对路径」存 `localStorage`，刷新 / 切 tab 不丢；发送后列表保留，可继续补充或手动清空。
+
+聊天消息里的划词批注不受影响：仍然「立即插入 + 位置行 + 点击跳回」。
 
 > 这是 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate)（MIT，作者 wangwei-wade）的增强 fork。
 > 上游 v0.1.1 在 **DSH 0.2.0-rc.2** 上会**静默失效**（既不报错也不注册任何 UI），本 fork 修掉了 4 个兼容性问题，
