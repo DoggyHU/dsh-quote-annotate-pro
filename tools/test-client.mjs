@@ -55,7 +55,8 @@ await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(SOURCE))
 assert.ok(captured, 'client.js 应调用 window.__ModuleLoader__.load(...)')
 assert.equal(captured.id, 'dsh-quote-annotate-pro')
 const api = captured.factory((name) => (name === 'react' ? {} : {}))
-const { buildQuoteHeader, nextAnnotationNo, annotationNoOf, parseQuoteBlock, snippetOf, anchorLabelOf, roleText } = api.__test
+const { buildQuoteHeader, nextAnnotationNo, annotationNoOf, parseQuoteBlock, snippetOf, anchorLabelOf, roleText,
+  stripQuoteBlocks, renderAnnotationBlock, renderAnnotationSection, sortAnnotations, draftHasAnnotation } = api.__test
 
 test('roleText / anchorLabelOf：轮次与角色文案', () => {
   assert.equal(roleText('assistant-step'), 'DSH 回复')
@@ -120,4 +121,58 @@ test('snippetOf：输入框引用条只显示原文（不显示位置行/批注�
   assert.equal(snippetOf('【批注 1 · 第1轮 · 你的消息】\n选中的原文\n\n批注：这条不对'), '选中的原文')
   assert.equal(snippetOf('【引用 · 第2轮 · DSH 回复】\n> 旧格式原文'), '旧格式原文')
   assert.equal(snippetOf(''), '')
+})
+
+test('stripQuoteBlocks：剥掉所有引用块，留下用户自己的文字', () => {
+  const draft = '我的问题\n\n【批注 1 · 第1轮 · 你的消息】\n原文A\n\n批注：x\n\n【批注 2 · 第2轮 · DSH 回复】\n原文B\n\n批注：y\n尾巴'
+  assert.equal(stripQuoteBlocks(draft), '我的问题\n\n尾巴')
+  assert.equal(stripQuoteBlocks(''), '')
+  assert.equal(stripQuoteBlocks('没有批注的草稿'), '没有批注的草稿')
+  // 只有块、没有用户文字 → 空串（重建时不会留下空段落）
+  assert.equal(stripQuoteBlocks('【批注 1 · 第1轮 · 你的消息】\n原文A'), '')
+})
+
+test('renderAnnotationBlock：位置行 + 原文 + 批注；首条带回复格式指令', () => {
+  const e = { turn: 1, kind: 'assistant-step', quote: '原文A', comment: '不太对' }
+  assert.equal(renderAnnotationBlock(e, 2), '【批注 2 · 第2轮 · DSH 回复】\n原文A\n\n批注：不太对')
+  const withIns = renderAnnotationBlock(e, 1, { instruction: true })
+  assert.match(withIns, /^【批注 1 · 第2轮 · DSH 回复（请按「Annotation 1：」/)
+  // 没有评语时不留空的「批注：」行；没有位置信息时只剩编号
+  assert.equal(renderAnnotationBlock({ quote: 'Q' }, 3), '【批注 3】\nQ')
+})
+
+test('renderAnnotationSection：重编号 1..N，只有首条带指令', () => {
+  assert.equal(renderAnnotationSection([]), '')
+  const out = renderAnnotationSection([
+    { turn: 0, kind: 'user', quote: 'A', comment: 'a' },
+    { turn: 2, kind: 'assistant-step', quote: 'B', comment: '' },
+  ])
+  const blocks = out.split('\n\n【批注')
+  assert.equal(blocks.length, 2)
+  assert.match(out, /^【批注 1 · 第1轮 · 你的消息/)
+  assert.ok(out.includes('【批注 2 · 第3轮 · DSH 回复】\nB'))
+  assert.equal((out.match(/请按「Annotation/g) || []).length, 1)
+})
+
+test('sortAnnotations：按轮次 → 同一轮内 DOM 顺序 → 点击时间', () => {
+  const dom = { k1: 5, k2: 2, k3: 0 }
+  const list = [
+    { anchorKey: 'k3', turn: 4, at: 1 },
+    { anchorKey: 'k1', turn: 0, at: 2 },
+    { anchorKey: 'k2', turn: 0, at: 3 },
+  ]
+  const ordered = sortAnnotations(list, (k) => (k in dom ? dom[k] : -1))
+  assert.deepEqual(ordered.map((e) => e.anchorKey), ['k2', 'k1', 'k3'])
+  // 轮次未知的排在最后；不传 domIndexOf 时退化为按点击时间
+  const noTurn = sortAnnotations([{ anchorKey: 'a', turn: null, at: 9 }, { anchorKey: 'b', turn: 1, at: 8 }])
+  assert.equal(noTurn[1].anchorKey, 'a')
+  // 不改原数组
+  assert.equal(list[0].anchorKey, 'k3')
+})
+
+test('draftHasAnnotation：草稿里还有这条原文才保留（删掉的不复活）', () => {
+  const draft = '【批注 1 · 第1轮 · 你的消息】\n选中的原文\n\n批注：x'
+  assert.equal(draftHasAnnotation(draft, { quote: '选中的原文' }), true)
+  assert.equal(draftHasAnnotation(draft, { quote: '别的原文' }), false)
+  assert.equal(draftHasAnnotation(draft, { quote: '' }), false)
 })
