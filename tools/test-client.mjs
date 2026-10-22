@@ -184,7 +184,12 @@ test('looksLikeQuoteFragment：删了一半的位置行也要认出来（否则�
   assert.equal(looksLikeQuoteFragment('批注 1 · 第3轮'), true)
   assert.equal(looksLikeQuoteFragment('· 第14轮 · DSH 回复'), true)
   assert.equal(looksLikeQuoteFragment('引用 · 第2轮'), true)
+  assert.equal(looksLikeQuoteFragment('批注'), true) // 删到只剩一个词（用户截图里的残片）
+  assert.equal(looksLikeQuoteFragment('引用：'), true)
+  assert.equal(looksLikeQuoteFragment('〔位置行'), true)
+  assert.equal(looksLikeQuoteFragment('第3轮 DSH 回复'), true)
   assert.equal(looksLikeQuoteFragment('我自己写的普通文字'), false)
+  assert.equal(looksLikeQuoteFragment('第3轮的答案不对'), false) // 用户自己的短句，不能误伤
   assert.equal(looksLikeQuoteFragment(''), false)
 })
 
