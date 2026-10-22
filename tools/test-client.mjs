@@ -56,7 +56,8 @@ assert.ok(captured, 'client.js 应调用 window.__ModuleLoader__.load(...)')
 assert.equal(captured.id, 'dsh-quote-annotate-pro')
 const api = captured.factory((name) => (name === 'react' ? {} : {}))
 const { buildQuoteHeader, nextAnnotationNo, annotationNoOf, parseQuoteBlock, snippetOf, anchorLabelOf, roleText,
-  stripQuoteBlocks, renderAnnotationBlock, renderAnnotationSection, sortAnnotations, draftHasAnnotation } = api.__test
+  stripQuoteBlocks, renderAnnotationBlock, renderAnnotationSection, sortAnnotations, draftHasAnnotation,
+  looksLikeQuoteFragment, removeBlockFromDraft, renumberAnnotationsInDraft } = api.__test
 
 test('roleText / anchorLabelOf：轮次与角色文案', () => {
   assert.equal(roleText('assistant-step'), 'DSH 回复')
@@ -175,4 +176,64 @@ test('draftHasAnnotation：草稿里还有这条原文才保留（删掉的不�
   assert.equal(draftHasAnnotation(draft, { quote: '选中的原文' }), true)
   assert.equal(draftHasAnnotation(draft, { quote: '别的原文' }), false)
   assert.equal(draftHasAnnotation(draft, { quote: '' }), false)
+})
+
+test('looksLikeQuoteFragment：删了一半的位置行也要认出来（否则残片露在输入框里）', () => {
+  assert.equal(looksLikeQuoteFragment('【批注 1 · 第3轮 · DSH 回复'), true)
+  assert.equal(looksLikeQuoteFragment('（请按「Annotation 1：」「Annotation 2：」…逐条回应）'), true)
+  assert.equal(looksLikeQuoteFragment('批注 1 · 第3轮'), true)
+  assert.equal(looksLikeQuoteFragment('· 第14轮 · DSH 回复'), true)
+  assert.equal(looksLikeQuoteFragment('引用 · 第2轮'), true)
+  assert.equal(looksLikeQuoteFragment('我自己写的普通文字'), false)
+  assert.equal(looksLikeQuoteFragment(''), false)
+})
+
+test('stripQuoteBlocks：块、孤儿评语、删除残片都不留，用户文字按原顺序保留', () => {
+  const draft = [
+    '开头一句',
+    '【批注 1 · 第1轮 · 你的消息（请按「Annotation 1：」…逐条回应）】',
+    '第一段原文',
+    '',
+    '批注：评语一',
+    '',
+    '中间一句',
+    '（请按「Annotation 1：」…逐条回应）',
+    '· 第14轮 · DSH 回复',
+    '',
+    '结尾一句',
+  ].join('\n')
+  const out = stripQuoteBlocks(draft)
+  // 用户自己写的段落之间的空行保留（只清掉块与残片）
+  assert.equal(out, '开头一句\n\n中间一句\n结尾一句')
+  assert.equal(out.includes('第一段原文'), false)
+  assert.equal(out.includes('评语一'), false)
+  assert.equal(out.includes('第14轮'), false)
+})
+
+test('removeBlockFromDraft：只删目标块，别的块和用户文字都保留', () => {
+  const draft = '先说一句\n\n【批注 1 · 第1轮 · 你的消息（请按「Annotation 1：」「Annotation 2：」…逐条回应）】\n第一段原文\n\n批注：第一条评语\n\n【批注 2 · 第3轮 · DSH 回复】\n第二段原文\n\n批注：第二条评语'
+  const out = removeBlockFromDraft(draft, '第二段原文', '第二条评语')
+  assert.ok(out.startsWith('先说一句'), out)
+  assert.ok(out.includes('第一段原文'), out)
+  assert.ok(out.includes('批注：第一条评语'), out)
+  assert.equal(out.includes('第二段原文'), false)
+  assert.equal(out.includes('第二条评语'), false)
+  assert.equal(/批注 2/.test(out), false)
+  // 找不到原文时原样返回（不做破坏性删除）
+  assert.equal(removeBlockFromDraft(draft, '不存在的原文', ''), draft)
+})
+
+test('removeBlockFromDraft：原文跨多行也能整块删掉', () => {
+  const draft = '【批注 1 · 第1轮 · 你的消息】\n第一行原文\n第二行原文\n\n批注：评语\n\n尾巴'
+  const out = removeBlockFromDraft(draft, '第一行原文\n第二行原文', '评语')
+  assert.equal(out, '尾巴')
+})
+
+test('renumberAnnotationsInDraft：按顺序重编号，指令只留在第一条', () => {
+  const draft = '【批注 3 · 第1轮 · 你的消息】\nA\n\n【批注 7 · 第3轮 · DSH 回复】\nB'
+  const out = renumberAnnotationsInDraft(draft)
+  const lines = out.split('\n')
+  assert.match(lines[0], /^【批注 1 · 第1轮 · 你的消息（请按「Annotation/)
+  assert.equal(lines[3], '【批注 2 · 第3轮 · DSH 回复】')
+  assert.equal((out.match(/请按「Annotation/g) || []).length, 1)
 })
