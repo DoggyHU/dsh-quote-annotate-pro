@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/dsh-quote-annotate-pro?color=2ea44f&label=npm)](https://www.npmjs.com/package/dsh-quote-annotate-pro)
 [![ci](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/zhao-guang-ai/badge.svg)](https://hub.xerj.org/contributors/zhao-guang-ai)
 
 **划词 → 批注 → 引用；发送之后，引用块仍然看得见，点一下就能回到原文。**
 
@@ -10,7 +11,7 @@
 
 > ⭐ **如果这个插件帮到了你，点个 Star 是最直接的支持** → [zhao-guang-ai/dsh-quote-annotate-pro](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro)（也会让更多 DSH 用户找到它）
 >
-> 已收录：in-DSH 市场（`dshmarket`）、[DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro)、[dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro)、dsh.pub、dsh-xray、HackSing/dsh-plugins、[awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness)。
+> 已收录：in-DSH 市场（`dshmarket`）、[DSH Market](https://dsh.market/?q=zhao-guang-ai%2Fdsh-quote-annotate-pro)、[dsh-plugin.org](https://dsh-plugin.org/zh/plugins/zhao-guang-ai/dsh-quote-annotate-pro)、dsh.pub、dsh-xray、HackSing/dsh-plugins、[awesome-deepseek-harness](https://github.com/0xsline/awesome-deepseek-harness)、[XERJ Corpus Hub](https://hub.xerj.org/contributors/zhao-guang-ai)（收录审核中）。
 
 ## 设计取舍：引用块"看得见"，而不是收进 chip
 
