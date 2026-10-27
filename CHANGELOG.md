@@ -2,6 +2,28 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 0.4.0 — 文档预览批注：在 docx / PDF / xlsx / Markdown / 代码预览里划词批注
+
+> 本功能原型来自 [DoggyHU/dsh-quote-annotate-pro](https://github.com/DoggyHU/dsh-quote-annotate-pro)（MIT，2026-10，
+> `document-preview annotations originally prototyped by DoggyHU`），在他的许可下于 0.3.15 代码上重做并合并。
+
+- **文档来源识别**：`sidebar.right.tab.document.actions` 槽探针取 `absolutePath`
+  （props.absolutePath → props.owner.absolutePath → props.tabInfo.absolutePath），
+  兜底文本预览的 `data-textpreview-url`（`dsh-resource://` 地址本地解码）；
+  探针缺失/侧栏被接管时静默降级，位置行退回旧形态，聊天批注零影响
+- **位置行带文件来源**：文档选区没有消息锚点，位置行改为 `【批注 1 · 文件 · <相对路径>[:L行|:p页]】`；
+  `:L` 来自 `data-textpreview-line`，`:p` 来自 `data-pdf-page`（docx 走 PDF 管线，页码是转换后页码；
+  Markdown 渲染器没有逐行 DOM，所以没有 `:L`）
+- **先攒后发**：不可编辑预览（docx / pdf / xlsx / 官方 md / 文本与代码预览）里的批注不立即写输入框，
+  而是按「会话 + 文件」进文件批注列表；预览底部浮出半透明浮条 `批注 · N`，展开可单条编辑 / 删除 / 清空，
+  点空白或 Esc 收起（编辑中 Esc 只取消该条）；「全部发送」一次性写入输入框
+- **并入统一管线**：批量发送与聊天批注共用编号重排、位置行锁定、块首圆形编号、右侧 ✕ 整块取消；
+  「全部发送」后清空该文件的批注列表（避免重复插入）
+- **聊天批注零变化**：消息选区仍走 `data-chat-anchor-key` + 轮次/角色，跳回、持久化、回复侧 `Annotation N` 芯片全部不变
+- **可编辑面排除**：选区祖先命中 `textarea` / `input` / `[contenteditable="true"]` 时不进文件批注列表（milkdown 等按聊天处理）
+- 路径默认显示「工作区内相对会话 cwd，工作区外绝对路径」（`DOC_PATH_STYLE = 'absolute'` 可改）；
+  文件批注存 localStorage（`dsh-quote-pro:doc-notes:<sessionId>|<path>`，上限 200 条/文件）
+
 ## 0.3.15 — 文档补全 + 把 0.3.6～0.3.14 的修复正式发布到 npm
 
 - README 补充两块说明：**引用块首行的圆形编号**（CSS 生成、不在正文里、删不掉也选不中）、
@@ -107,7 +129,6 @@
 - **残留空壳**：输入框上方引用栏会过滤掉"正文里已不存在原文"的旧 occurrence（旧版本遗留的 `批注：1` 空壳）
 - 新增纯函数 `stripQuoteBlocks` / `renderAnnotationBlock` / `renderAnnotationSection` / `sortAnnotations` /
   `draftHasAnnotation`，`npm test` 13/13
-
 ## 0.3.5 — 输入框里直接显示紧凑引用块（不再用 @批注 芯片）
 
 - **交互变化**：插入引用时不再创建 `@批注 N` 芯片，而是把「位置行 + 原文 + 批注：N」作为纯文本
@@ -299,3 +320,4 @@ Fork 自 [`dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annota
 - chip 本体跳转按 `title` 反查，label 相同的多条引用只命中最早一条（导航条始终精确）。
 - 目标消息行未加载时只给提示，不自动翻页。
 - 回合尾部按钮在有交付文件的回合也会显示（上游会隐藏、让位给官方「已生成文件」chips）。
+
