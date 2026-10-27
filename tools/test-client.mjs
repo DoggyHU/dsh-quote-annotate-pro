@@ -59,7 +59,7 @@ const { buildQuoteHeader, nextAnnotationNo, annotationNoOf, parseQuoteBlock, sni
   stripQuoteBlocks, renderAnnotationBlock, renderAnnotationSection, sortAnnotations, draftHasAnnotation,
   looksLikeQuoteFragment, removeBlockFromDraft, renumberAnnotationsInDraft,
   docSourceLabel, pathOfFileAddress, fileNameOfPath, pathRelativeTo, docSourceOf, docProbes, buildDocNotesBatch,
-  docNotesStore, docNotesStorageKey, noteWhereLabel } = api.__test
+  docFileNameOfHeader, docNotesStore, docNotesStorageKey, noteWhereLabel } = api.__test
 
 test('roleText / anchorLabelOf：轮次与角色文案', () => {
   assert.equal(roleText('assistant-step'), 'DSH 回复')
@@ -457,4 +457,12 @@ test('sortAnnotations：文件批注（没有轮次）排在聊天批注之后',
   ]
   const out = sortAnnotations(list, () => 0)
   assert.deepEqual(out.map((e) => e.quote), ['C', 'F'])
+})
+
+test('docFileNameOfHeader：从文档位置行取文件名（聊天位置行返回空）', () => {
+  assert.equal(docFileNameOfHeader('【批注 1 · 文件 · sidebar-test/测试文档.docx】'), '测试文档.docx')
+  assert.equal(docFileNameOfHeader('【批注 2 · 文件 · D:/ws/a.pdf:p3】'), 'a.pdf')
+  assert.equal(docFileNameOfHeader('【批注 3 · 文件 · D:/ws/a.txt:L12】'), 'a.txt')
+  assert.equal(docFileNameOfHeader('【批注 1 · 第3轮 · DSH 回复】'), '')
+  assert.equal(docFileNameOfHeader(''), '')
 })
