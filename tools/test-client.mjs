@@ -59,7 +59,7 @@ const { buildQuoteHeader, nextAnnotationNo, annotationNoOf, parseQuoteBlock, sni
   stripQuoteBlocks, renderAnnotationBlock, renderAnnotationSection, sortAnnotations, draftHasAnnotation,
   looksLikeQuoteFragment, removeBlockFromDraft, renumberAnnotationsInDraft,
   docSourceLabel, pathOfFileAddress, fileNameOfPath, pathRelativeTo, docSourceOf, docProbes, buildDocNotesBatch,
-  docFileNameOfHeader, docNotesStore, docNotesStorageKey, noteWhereLabel } = api.__test
+  docFileNameOfHeader, parseDocSourceHeader, fileResourceAddress, docNotesStore, docNotesStorageKey, noteWhereLabel } = api.__test
 
 test('roleText / anchorLabelOf：轮次与角色文案', () => {
   assert.equal(roleText('assistant-step'), 'DSH 回复')
@@ -474,4 +474,17 @@ test('removeBlockFromDraft：多行原文的块一次删干净（清空输入框
   assert.equal(removeBlockFromDraft('批注：45\n尾巴', '不存在的原文', '45'), '尾巴')
   // 找不到原文、也没有评语：原样返回
   assert.equal(removeBlockFromDraft('尾巴', '不存在的原文', ''), '尾巴')
+})
+
+test('parseDocSourceHeader：从位置行取 路径 / 行号 / 页码', () => {
+  assert.deepEqual(parseDocSourceHeader('【批注 1 · 文件 · sidebar-test/测试文档.docx】'), { path: 'sidebar-test/测试文档.docx', line: null, page: null })
+  assert.deepEqual(parseDocSourceHeader('【批注 2 · 文件 · a/b.py:L12】'), { path: 'a/b.py', line: 12, page: null })
+  assert.deepEqual(parseDocSourceHeader('【批注 3 · 文件 · x.pdf:p3】'), { path: 'x.pdf', line: null, page: 3 })
+  assert.deepEqual(parseDocSourceHeader('【批注 1 · 第3轮 · DSH 回复】'), { path: '', line: null, page: null })
+})
+
+test('fileResourceAddress：相对路径走 session，绝对路径走 absolute（供 openResource 打开）', () => {
+  assert.equal(fileResourceAddress('s1', 'a/b c.txt'), 'dsh-resource://file/session/s1/a/b%20c.txt')
+  assert.equal(fileResourceAddress('s1', 'D:/ws/a.docx'), 'dsh-resource://file/absolute/D%3A/ws/a.docx')
+  assert.equal(fileResourceAddress('s1', ''), '')
 })
