@@ -13,14 +13,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # 需要写权限才能创建 GitHub Release
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
-      contents: read
+      contents: write # 创建 GitHub Release（gh release create）
       id-token: write # OIDC：Trusted Publishing 与 provenance 都需要
     steps:
       - uses: actions/checkout@v4
@@ -65,3 +65,17 @@ jobs:
       - name: 发布（OIDC，无 token）
         if: steps.probe.outputs.skip != '1'
         run: npm publish --access public --provenance
+
+      # 推 tag 时顺手建 GitHub Release（说明按 commit 自动生成；已存在则跳过）
+      - name: 生成 GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG 已存在，跳过"
+            exit 0
+          fi
+          gh release create "$TAG" --generate-notes --title "$TAG"
+          echo "已创建 Release $TAG"
