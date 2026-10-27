@@ -466,3 +466,12 @@ test('docFileNameOfHeader：从文档位置行取文件名（聊天位置行返�
   assert.equal(docFileNameOfHeader('【批注 1 · 第3轮 · DSH 回复】'), '')
   assert.equal(docFileNameOfHeader(''), '')
 })
+
+test('removeBlockFromDraft：多行原文的块一次删干净（清空输入框后不留残句）', () => {
+  const draft = '【批注 1 · 第1轮 · 你的消息】\n第一行原文\n第二行原文\n\n批注：45\n\n尾巴'
+  assert.equal(removeBlockFromDraft(draft, '第一行原文', '45'), '尾巴')
+  // 只剩孤立评语行（原文已被手动删掉）：按评语把它清掉
+  assert.equal(removeBlockFromDraft('批注：45\n尾巴', '不存在的原文', '45'), '尾巴')
+  // 找不到原文、也没有评语：原样返回
+  assert.equal(removeBlockFromDraft('尾巴', '不存在的原文', ''), '尾巴')
+})
