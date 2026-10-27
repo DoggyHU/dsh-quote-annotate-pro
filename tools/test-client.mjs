@@ -488,3 +488,9 @@ test('fileResourceAddress：相对路径走 session，绝对路径走 absolute�
   assert.equal(fileResourceAddress('s1', 'D:/ws/a.docx'), 'dsh-resource://file/absolute/D%3A/ws/a.docx')
   assert.equal(fileResourceAddress('s1', ''), '')
 })
+
+test('parseDocSourceHeader：位置行内嵌「（请按…）」指令时也能正确取路径', () => {
+  const header = '【批注 1 · 文件 · annotate-test/批注实验文档.docx:p1（请按「Annotation 1：」「Annotation 2：」…逐条回应）】'
+  assert.deepEqual(parseDocSourceHeader(header), { path: 'annotate-test/批注实验文档.docx', line: null, page: 1 })
+  assert.equal(docFileNameOfHeader(header), '批注实验文档.docx')
+})
