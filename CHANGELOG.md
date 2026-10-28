@@ -2,7 +2,12 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
-## 未发布 — 深色模式适配
+## 0.4.1 — 深色模式适配 + 多行批注（原文含空行）修复
+
+> 本版由社区贡献 [PR #3](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/pull/3)（@Jayden-27）合入，
+> 另追加一条维护者加固（`stripQuoteBlocks` 已知原文收块，见下）。
+
+### 深色模式适配
 
 深色主题下三处配色问题，均源于误用主题令牌（取值来自 DSH 自带
 `--dsw-static-neutral-bluish-*` 调色板，非猜测）：
@@ -24,9 +29,22 @@
   改为 `color-mix(in oklab, var(--dsw-alias-label-secondary) N%, transparent)`。
   顺带修复 `.dshq-cmp-quote:hover` —— 此前 hover 与常态同值、加深反馈被抹平，现为 16%
 
-验证：`node --check` 全绿、`tools/check-manifest.mjs` 通过、`tools/test-client.mjs` 39/39；
-另用抽出的真实令牌值 + 插件真实 CSS 做明/暗双主题渲染比对，确认无回归。
-仅客户端样式，无宿主代码、无消息文本语义变更。
+### 多行批注（原文含空行）
+
+- **正文边界改为「批注：」评语行 / 下一个位置行**：多段划词选中的原文本身就带空行，
+  旧实现遇空行即收块，第 2 段之后会漏成普通正文。
+  `parseQuoteBlock` / `stripQuoteBlocks` / `removeBlockFromDraft` / 输入框装饰状态机同步修正
+- **输入框里的多行块连成一体**：块内行间不再留缝，圆角只给首行与末行中间行直角，
+  块内空行单独打 `.dshq-cmp-quote-blank` 压扁成段落间距
+- **整块删除更准**：`removeBlockFromDraft` 两侧都走空白规约比较，命中后按位置行/评语行边界收尾；
+  调用方只给首行原文时也能整块删干净（此前会残留后续正文行）
+- **加固（本仓库追加）**：`stripQuoteBlocks(raw, knownQuotes)` 接受已知原文，正文一命中即收块 ——
+  没有评语的块（`comment` 为空时不输出「批注：」行）或用户把评语行删掉后，
+  块后的用户文字不会再被当成正文剥掉而丢字；不传该参数时行为与旧版一致
+
+验证：`node --check` 全绿、`tools/check-manifest.mjs` 通过、`tools/test-client.mjs` 46/46；
+主题令牌取自 DSH `app.asar` 的真实解析值（深色 `body[data-ds-dark-theme]` / 浅色 `:root`），
+明暗双主题渲染比对无回归。仅客户端样式与草稿文本解析，无宿主代码、无消息语义变更。
 
 ## 0.4.0 — 文档预览批注：在 docx / PDF / xlsx / Markdown / 代码预览里划词批注
 

@@ -273,3 +273,4 @@ MIT，见 [LICENSE](./LICENSE)。
 - 上游：[`wangwei-wade/dsh-quote-annotate`](https://github.com/wangwei-wade/dsh-quote-annotate) v0.1.1（MIT，© 2026 wangwei-wade）
 - 本 fork：修复其在 **DSH 0.2.0-rc.2** 上的 6 个兼容性问题，并补充引用定位相关能力，同样以 MIT 发布
 - 文档预览批注原型：[`DoggyHU/dsh-quote-annotate-pro`](https://github.com/DoggyHU/dsh-quote-annotate-pro)（MIT，2026-10），0.4.0 中重做并合并，保留署名
+- 深色模式适配与多行批注修复：[PR #3](https://github.com/zhao-guang-ai/dsh-quote-annotate-pro/pull/3) by [@Jayden-27](https://github.com/Jayden-27)，0.4.1 中合入
