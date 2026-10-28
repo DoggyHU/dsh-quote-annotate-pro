@@ -278,6 +278,18 @@ test('stripQuoteBlocks：多段正文（内含空行）也被整体剥掉', () =
   assert.equal(stripQuoteBlocks(draft), '问题\n\n尾巴')
 })
 
+test('stripQuoteBlocks：块没有评语时，块后用户文字不被吞掉（传入已知原文）', () => {
+  // 用户把「批注：…」整行删掉（或插入时就没写评语）后，块后紧接着写自己的话：
+  // 只靠评语行收块会把这段用户文字一起吞掉 → 再插一条批注时被静默删除。
+  const draft = '【批注 1 · 第1轮 · 你的消息】\n原文一\n原文二\n\n我自己想说的话'
+  assert.equal(stripQuoteBlocks(draft, ['原文一\n原文二']), '我自己想说的话')
+  // 多段正文（内含空行）时同样按已知原文收块
+  const multi = '【批注 1 · 第10轮 · DSH 回复】\n段一\n\n段二\n\n我要补一句'
+  assert.equal(stripQuoteBlocks(multi, ['段一\n\n段二']), '我要补一句')
+  // 不传已知原文时保持原行为（没有块边界可依据，只能吞到结尾）
+  assert.equal(stripQuoteBlocks(draft), '')
+})
+
 test('renumberAnnotationsInDraft：按顺序重编号，指令只留在第一条', () => {
   const draft = '【批注 3 · 第1轮 · 你的消息】\nA\n\n【批注 7 · 第3轮 · DSH 回复】\nB'
   const out = renumberAnnotationsInDraft(draft)
