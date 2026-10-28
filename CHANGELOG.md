@@ -2,6 +2,32 @@
 
 本项目的所有重要变更都记在这里。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## 未发布 — 深色模式适配
+
+深色主题下三处配色问题，均源于误用主题令牌（取值来自 DSH 自带
+`--dsw-static-neutral-bluish-*` 调色板，非猜测）：
+
+- **浮层发亮**：`.dshq-editor` / `.dshq-toolbar` / `.dshq-tip` / `.dshq-toast-ok`
+  / `.dshq-toast-err` / `.dshq-cancel-btn` / `.dshq-doc-bar` / `.dshq-doc-bar-panel`
+  使用 `--dsw-alias-bg-overlay`，该令牌深色下取 `neutral-bluish-700`（`#61666b`，中灰），
+  与页底 `#151517` 亮度差约 +80，观感上"亮了一块"。
+  改用 `bg-layer-2` 叠加 6% `label-secondary` 的表面色：深色 Δ+33 / 浅色 Δ-9，
+  两套主题都能与页底拉开层次
+- **主按钮白底白字**：`.dshq-primary` / `.dshq-primary:hover` / `.dshq-doc-bar-send:hover`
+  / `.dshq-cmp-quote-first::before` 用 `background:brand-primary` + `color:#fff`。
+  浅色下 brand 近黑、白字正常；深色下 brand 变为 `#f9fafb`（近白），
+  文字与底色亮度差仅 5，按钮内容不可读。
+  文字改用 `--dsw-alias-label-primary-inverted`（深色 `#353638` / 浅色 `#fff`），
+  两套主题对比度均 195+
+- **引用块底纹硬编码**：`.dshq-sent-quote` / `.dshq-cmp-quote` / `.dshq-cmp-comment`
+  / `.dshq-anno-chip` 写死 `rgba(127,127,127,.10|.12)`，不随主题变化。
+  改为 `color-mix(in oklab, var(--dsw-alias-label-secondary) N%, transparent)`。
+  顺带修复 `.dshq-cmp-quote:hover` —— 此前 hover 与常态同值、加深反馈被抹平，现为 16%
+
+验证：`node --check` 全绿、`tools/check-manifest.mjs` 通过、`tools/test-client.mjs` 39/39；
+另用抽出的真实令牌值 + 插件真实 CSS 做明/暗双主题渲染比对，确认无回归。
+仅客户端样式，无宿主代码、无消息文本语义变更。
+
 ## 0.4.0 — 文档预览批注：在 docx / PDF / xlsx / Markdown / 代码预览里划词批注
 
 > 本功能原型来自 [DoggyHU/dsh-quote-annotate-pro](https://github.com/DoggyHU/dsh-quote-annotate-pro)（MIT，2026-10，
