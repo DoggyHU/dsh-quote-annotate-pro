@@ -109,9 +109,27 @@ test('parseQuoteBlock：多行原文 / 前置文本 / 旧格式', () => {
   assert.ok(r)
   assert.equal(r.no, null)
   assert.equal(r.before, '开头的一句话')
-  assert.equal(r.quote, '第一行 第二行')
+  // 多行原文按换行保留（渲染侧 white-space:pre-wrap，能看到原始段落结构）
+  assert.equal(r.quote, '第一行\n第二行')
   assert.equal(r.comment, '补充说明')
   assert.match(r.rest, /结尾/)
+})
+
+test('parseQuoteBlock：原文里含空行（多段划词）不被截断', () => {
+  // 多段划词选中时，原文本身就带空行；旧实现遇空行即收块，第 2 段会被漏成正文
+  const raw = '【批注 1 · 第10轮 · DSH 回复】\n还能继续跑的\n\n已部署但未重测的：\nTC-TR-023\n\n批注：先跑这两条'
+  const r = parseQuoteBlock(raw)
+  assert.ok(r)
+  assert.equal(r.quote, '还能继续跑的\n\n已部署但未重测的：\nTC-TR-023')
+  assert.equal(r.comment, '先跑这两条')
+})
+
+test('parseQuoteBlock：正文遇到下一个位置行即结束', () => {
+  const raw = '【批注 1 · 第1轮 · 你的消息】\n原文A\n\n【批注 2 · 第2轮 · 你的消息】\n原文B\n\n批注：y'
+  const r = parseQuoteBlock(raw)
+  assert.ok(r)
+  assert.equal(r.quote, '原文A')
+  assert.equal(r.rest.indexOf('【批注 2'), 0)
 })
 
 test('parseQuoteBlock：解析不了时返回 null', () => {
@@ -234,6 +252,30 @@ test('removeBlockFromDraft：原文跨多行也能整块删掉', () => {
   const draft = '【批注 1 · 第1轮 · 你的消息】\n第一行原文\n第二行原文\n\n批注：评语\n\n尾巴'
   const out = removeBlockFromDraft(draft, '第一行原文\n第二行原文', '评语')
   assert.equal(out, '尾巴')
+})
+
+test('removeBlockFromDraft：quote 只含正文首行时，后续正文一并删掉', () => {
+  // 历史草稿 / 手工插入的块，调用方可能只拿到首行；不应残留后续正文行
+  const draft = '【批注 1 · 第1轮 · 你的消息】\n一行\n二行\n\n批注：x\n\n尾巴'
+  assert.equal(removeBlockFromDraft(draft, '一行', 'x'), '尾巴')
+})
+
+test('removeBlockFromDraft：多段正文（内含空行）整块删掉', () => {
+  const draft = '问题\n\n【批注 1 · 第10轮 · DSH 回复】\n段一\n\n段二\nTC-023\n\n批注：先跑'
+  assert.equal(removeBlockFromDraft(draft, '段一\n\n段二\nTC-023', '先跑'), '问题')
+})
+
+test('removeBlockFromDraft：两块相邻时只删目标块，不误伤下一块', () => {
+  const draft = '【批注 1 · 第1轮 · 你】\n原文A\n\n批注：a\n\n【批注 2 · 第2轮 · 你】\n原文B\n\n批注：b'
+  assert.equal(
+    removeBlockFromDraft(draft, '原文A', 'a'),
+    '【批注 2 · 第2轮 · 你】\n原文B\n\n批注：b',
+  )
+})
+
+test('stripQuoteBlocks：多段正文（内含空行）也被整体剥掉', () => {
+  const draft = '问题\n\n【批注 1 · 第10轮 · DSH 回复】\n段一\n\n段二\nTC-023\n\n批注：先跑\n\n尾巴'
+  assert.equal(stripQuoteBlocks(draft), '问题\n\n尾巴')
 })
 
 test('renumberAnnotationsInDraft：按顺序重编号，指令只留在第一条', () => {
